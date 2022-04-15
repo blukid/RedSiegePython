@@ -1,28 +1,30 @@
+''' Header security checker '''
 import argparse
 import requests
-import sys
 
-def checkURLs(urls):
-    urlList = []
+def check_urls(urls):
+    ''' check each url is HTTPS, add to list if so '''
+    url_list = []
     for url in urls:
         if url[:5] != "https":
             print(url + " is not an HTTPS URL, ignoring!")
-    else:
-        urlList.append(url)
-    return urlList
+        else:
+            url_list.append(url)
+    return url_list
 
 def main():
-    parser = argparse.ArgumentParser(description = "Check URLs for common security issues with headers")
-    group = parser.add_mutually_exclusive_group(required=True)
+    ''' main '''
+    parser = argparse.ArgumentParser(description = "Check URLs for common header security issues")
+    group = parser.add_mutually_exclusive_group(required = True)
     group.add_argument("URL", help = "URL to query", nargs = "?")
     group.add_argument("-i", "--inFile", help = "File containing URLs")
     args = parser.parse_args()
 
     if args.URL:
-        urls = checkURLs([args.URL])
+        urls = check_urls([args.URL])
     elif args.inFile:
-        file = open(args.inFile)
-        urls = checkURLs(file.readlines())
+        file = open(args.inFile, encoding = 'utf8')
+        urls = check_urls(file.readlines())
 
     print("Starting Strict-Transport-Security test\n")
     if len(urls) > 0:
@@ -34,9 +36,9 @@ def main():
                     print(url + " passed!")
         except KeyError:
             print(url + " failed!")
-        except Exception as e:
-            print("Exception: {}".format(type(e).__name__))
-            print("Exception message: {}".format(e))
+        except Exception as xcpt:
+            print(f"Exception: {type(xcpt).__name__}")
+            print(f"Exception message: {xcpt}")
 
     print("\nDone!")
 
