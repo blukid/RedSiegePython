@@ -34,8 +34,9 @@ def main():
     if args.IP:
         ips = get_addr([args.IP])
     elif args.inFile:
-        file = open(args.inFile, encoding = 'utf8')
-        ips = get_addr(file.readlines())
+        #file = open(args.inFile, encoding = 'utf8')
+        with open(args.inFile, encoding = "utf8") as file:
+            ips = get_addr(file.readlines())
     else:
         ips = [""]
 
