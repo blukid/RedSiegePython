@@ -14,14 +14,13 @@ API_URL = "https://api.ipgeolocation.io/ipgeo"
 def get_addr(ips):
     ''' Get address(es) '''
     ip_list = []
-    try:
-        for line in ips:
-            for ip_addr in ipaddress.ip_network(line.strip()):
+    for line in ips:
+        try:
+            for ip_addr in ipaddress.ip_network(line):
                 ip_list.append(ip_addr)
-        return ip_list
-    except ValueError:
-        print("Not a valid IP address or subnet")
-        sys.exit(1)
+        except ValueError:
+            print(f"{line} is not a valid IP address or subnet")
+    return ip_list
 
 def main():
     ''' main '''
@@ -34,17 +33,23 @@ def main():
     if args.IP:
         ips = get_addr([args.IP])
     elif args.inFile:
-        #file = open(args.inFile, encoding = 'utf8')
-        with open(args.inFile, encoding = "utf8") as file:
-            ips = get_addr(file.readlines())
+        try:
+            with open(args.inFile, encoding = "utf8") as file:
+                ips = get_addr(file.read().split())
+        except FileNotFoundError:
+            print(f"{args.inFile} bad file")
+            sys.exit(1)
     else:
         ips = [""]
 
     for ip_addr in ips:
-        response = requests.get(API_URL + "?apiKey=" + API_KEY + "&ip=" \
+        try:
+            response = requests.get(API_URL + "?apiKey=" + API_KEY + "&ip=" \
                                 + str(ip_addr) + "&fields=geo,organization")
-        parsed = json.loads(response.text)
-        print(json.dumps(parsed, indent = 4, sort_keys = True))
+            parsed = json.loads(response.text)
+            print(json.dumps(parsed, indent = 4, sort_keys = True))
+        except requests.exceptions.ConnectionError:
+            print(f"Error with IP: {ip_addr}. Is this IP valid? Do you have network connection?")
 
 if __name__ == "__main__":
     main()

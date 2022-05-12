@@ -4,20 +4,11 @@ import requests
 from colorama import Fore, Style
 
 tests = [
-    "Strict-Transport-Security",
-    "Content-Security-Policy",
-    "X-Frame-Options"
+    {"name":"Strict-Transport-Security", "skippable":True, "printable":False},
+    {"name":"Content-Security-Policy", "skippable":False, "printable":False},
+    {"name":"X-Frame-Options", "skippable":False, "printable":False},
+    {"name":"Server", "skippable":False, "printable":True}
 ]
-
-def check_urls(urls):
-    ''' check each url is HTTPS, add to list if so '''
-    url_list = []
-    for url in urls:
-        if url[:5] != "https":
-            print(url + " is not an HTTPS URL, ignoring!")
-        else:
-            url_list.append(url)
-    return url_list
 
 def main():
     ''' main '''
@@ -28,29 +19,33 @@ def main():
     args = parser.parse_args()
 
     if args.URL:
-        urls = check_urls([args.URL])
+        urls = [args.URL]
     elif args.inFile:
         with open(args.inFile, encoding = 'utf8') as file:
-            urls = check_urls(file.readlines())
+            urls = file.read().split()
 
     if len(urls) > 0:
         for url in urls:
             try:
                 response = requests.get(url)
-                #print(response.headers)
                 print(url + ":")
                 for test in tests:
-                    try:
-                        if response.headers[test]:
-                            print(f"\t{test:<35} {Fore.GREEN}PASSED{Style.RESET_ALL}")
-                    except KeyError:
-                        print(f"\t{test:<35} {Fore.RED}FAILED{Style.RESET_ALL}")
-                        continue
-            except Exception as xcpt:
-                print(f"Exception: {type(xcpt).__name__}")
-                print(f"Exception message: {xcpt}")
+                    if test["skippable"] is True and url[:5] != "https":
+                        print(f"\t{test['name']:<35} {Fore.YELLOW}SKIP (N/A){Style.RESET_ALL}")
+                    elif test["printable"] is True:
+                        if test["name"] in response.headers:
+                            print(f"\t{test['name']:<35} {response.headers[test['name']]}")
+                    else:
+                        if test["name"] in response.headers:
+                            print(f"\t{test['name']:<35} {Fore.GREEN}PASSED{Style.RESET_ALL}")
+                        else:
+                            print(f"\t{test['name']:<35} {Fore.RED}FAILED{Style.RESET_ALL}")
+            except:
+                print(f"{Fore.RED}Issue with", url, f"{Style.RESET_ALL}")
+    else:
+        print(f"{Fore.RED}No URLs to check!{Style.RESET_ALL}")
 
-    print("\nDone!")
+    print("Done!")
 
 if __name__ == "__main__":
     main()

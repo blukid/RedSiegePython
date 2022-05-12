@@ -1,3 +1,0 @@
-move https check to lower, only fail on some tests
-	data structure for tests rather than array, includes ssl check binary value
-remove some logic from main to own function (make pylint happy)
