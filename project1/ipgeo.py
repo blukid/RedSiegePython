@@ -7,8 +7,12 @@ import sys
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
-API_KEY = os.getenv("API_KEY")
+if load_dotenv():
+    API_KEY = os.getenv("API_KEY")
+else:
+    print("No environment file found, exiting!")
+    sys.exit(1)
+
 API_URL = "https://api.ipgeolocation.io/ipgeo"
 
 def get_addr(ips):
@@ -45,7 +49,7 @@ def main():
     for ip_addr in ips:
         try:
             response = requests.get(API_URL + "?apiKey=" + API_KEY + "&ip=" \
-                                + str(ip_addr) + "&fields=geo,organization")
+                                + str(ip_addr) + "&fields=geo,organization", timeout=5)
             parsed = json.loads(response.text)
             print(json.dumps(parsed, indent = 4, sort_keys = True))
         except requests.exceptions.ConnectionError:
