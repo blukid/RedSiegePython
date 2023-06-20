@@ -27,7 +27,7 @@ def main():
     if len(urls) > 0:
         for url in urls:
             try:
-                response = requests.get(url)
+                response = requests.get(url, timeout=5)
                 print(url + ":")
                 for test in tests:
                     if test["skippable"] is True and url[:5] != "https":
@@ -40,7 +40,7 @@ def main():
                             print(f"\t{test['name']:<35} {Fore.GREEN}PASSED{Style.RESET_ALL}")
                         else:
                             print(f"\t{test['name']:<35} {Fore.RED}FAILED{Style.RESET_ALL}")
-            except:
+            except requests.exceptions.RequestException:
                 print(f"{Fore.RED}Issue with", url, f"{Style.RESET_ALL}")
     else:
         print(f"{Fore.RED}No URLs to check!{Style.RESET_ALL}")
